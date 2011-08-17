@@ -1,0 +1,22 @@
+.cfbe_table td input {
+	margin: 5px 0;
+	float: left;
+}
+.cfbe_table label {
+	float: left;
+	margin: 7px 5px 0 0;
+}
+.cfbe_table .cfbe_field_name {
+	width: 140px;
+	margin-right: 30px;
+}
+.cfbe_field_value {
+	width: 370px;
+	height: 45px;
+	float: left;
+}
+.cfbe_hint {
+	color: darkgray;
+	float: left;
+	margin: 9px 0 0 10px;
+}
