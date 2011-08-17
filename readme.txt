@@ -29,12 +29,13 @@ Yup, just go to the settings page and you can turn post types on and off.
 Copy the folder to your WordPress 
 '*/wp-content/plugins/*' folder.
 
-By default the plugin will not be enabled for all post types but you can go to the settings page and turn it off for any post types you would like.
+By default the plugin will be enabled for all post types but you can go to the settings page and turn it off for any post types where it is not needed.
 
 
 == Screenshots ==
 
 1. Bulk Editor Screen
+2. Settings Screen
 
 
 == Changelog ==
