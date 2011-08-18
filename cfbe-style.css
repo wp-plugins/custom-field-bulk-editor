@@ -20,3 +20,14 @@
 	float: left;
 	margin: 9px 0 0 10px;
 }
+#cfbe_form_1 {
+	display: block;
+	margin-bottom: 5px;
+	overflow: auto;
+}
+#cfbe_form_1 select, #searchtext {
+	margin: 0 25px 0 5px;
+}
+#searchtext {
+	width: 110px;
+}

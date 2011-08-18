@@ -4,7 +4,7 @@ Donate link: http://www.soapboxdave.com/
 Tags: custom fields, bulk, editor, custom post type
 Requires at least: 3.0
 Tested up to: 3.2.1
-Stable tag: 1.0
+Stable tag: 1.1
 This plugin lets you edit the custom fields for many posts at once. Designed to work with pages, posts, and all custom post types.
 
 == Description ==
@@ -39,6 +39,9 @@ By default the plugin will be enabled for all post types but you can go to the s
 
 
 == Changelog ==
+
+= 1.1 (8/17/2011) =
+* Added Post Searching and Filtering by Applicable Taxonomies
 
 = 1.0 (8/17/2011) =
 * Initial Release

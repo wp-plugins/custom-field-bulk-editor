@@ -5,7 +5,7 @@ Plugin Name: Custom Field Bulk Editor
 Plugin URI: http://wordpress.org/extend/plugins/custom-field-bulk-editor/
 Description: Allows you to edit your custom fields in bulk. Works with custom post types.
 Author: SparkWeb Interactive, Inc.
-Version: 1.0
+Version: 1.1
 Author URI: http://www.soapboxdave.com/
 
 **************************************************************************
@@ -65,7 +65,50 @@ function cfbe_editor() {
 
 	//Saved Notice
 	if (isset($_GET['saved'])) echo '<div class="updated"><p>' . __('Custom Field Values Have Been Saved.') . '</p></div>';
+	
+	echo "<br />";
+	
+	echo '<form action="edit.php" name="cfbe_form_1" id="cfbe_form_1" method="get">';
+	echo '<input type="hidden" name="post_type" value="' . htmlspecialchars($post_type) . '" />'."\n";
+	echo '<input type="hidden" name="page" value="cfbe_editor-' . htmlspecialchars($post_type) . '" />'."\n";
+	
+	$args = array(
+		"post_type" => $post_type,
+		"posts_per_page" => -1,
+		"post_status" => array("publish", "pending", "draft", "future", "private")
+	);
 
+	if (isset($_GET['searchtext'])) {
+		$searchtext = esc_attr($_GET["searchtext"]);
+		$args["s"] = $_GET["searchtext"];
+	} else {
+		$searchtext = "";
+	}
+
+	$taxonomies = get_object_taxonomies($post_type);
+	foreach ($taxonomies AS $taxonomy) {
+		$tax = get_taxonomy($taxonomy);
+		$terms = get_terms($taxonomy);
+		if (count($terms) == 0) continue;
+		$tax_name = $tax->label;
+		if (isset($_GET[$taxonomy])) {
+			$query_slug = $_GET[$taxonomy];
+			$args[$taxonomy] = $_GET[$taxonomy];
+		} else {
+			$query_slug = "";
+		}
+		echo '<label for="' . $taxonomy . '">' . $tax_name . '</label>';
+		echo '<select name="' . $taxonomy . '" id="' . $taxonomy . '" class="postform">';
+		echo '<option value="">' . sprintf(__('Show All %s'), $tax_name) . '</option>'."\n";
+		foreach ($terms as $term) {
+			echo '<option value='. $term->slug . ($term->slug == $query_slug ? ' selected="selected"' : '') . '>' . $term->name .' (' . $term->count .')</option>';
+		}
+		echo "</select>";
+	}
+	echo '<label for="searchtext">' . __("Search") . '</label>';
+	echo '<input type="text" name="searchtext" id="searchtext" value="' . $searchtext . '" />';
+	echo '<input type="submit" value="Apply" class="button" />';
+	echo '</form>'."\n\n";
 	
 	echo '<form action="options.php" name="cfbe_form_2" id="cfbe_form_2" method="post">';
 	echo '<input type="hidden" name="cfbe_save" value="1" />'."\n";
@@ -73,13 +116,10 @@ function cfbe_editor() {
 	echo '<input type="hidden" name="cfbe_post_type" value="' . htmlspecialchars($post_type) . '" />'."\n";
 	wp_nonce_field('cfbe-save');
 	
-	$all_posts = get_posts(array(
-		"post_type" => $post_type,
-		"posts_per_page" => -1,
-		"post_status" => array("publish", "pending", "draft", "future", "private")
-	));
+	
+	$all_posts = get_posts($args);
 	?>
-	<br /><table cellspacing="0" class="wp-list-table widefat fixed posts">
+	<table cellspacing="0" class="wp-list-table widefat fixed posts">
 	<thead>
 	<tr>
 		<th style="" class="manage-column column-cb check-column" id="cb" scope="col"><input type="checkbox"></th>
