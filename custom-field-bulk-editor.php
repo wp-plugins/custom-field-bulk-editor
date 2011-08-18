@@ -69,7 +69,7 @@ function cfbe_editor() {
 	echo "<br />";
 	
 	echo '<form action="edit.php" name="cfbe_form_1" id="cfbe_form_1" method="get">';
-	echo '<input type="hidden" name="post_type" value="' . htmlspecialchars($post_type) . '" />'."\n";
+	if ($post_type != "post") echo '<input type="hidden" name="post_type" value="' . htmlspecialchars($post_type) . '" />'."\n";
 	echo '<input type="hidden" name="page" value="cfbe_editor-' . htmlspecialchars($post_type) . '" />'."\n";
 	
 	$args = array(
