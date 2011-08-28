@@ -5,7 +5,7 @@ Plugin Name: Custom Field Bulk Editor
 Plugin URI: http://wordpress.org/extend/plugins/custom-field-bulk-editor/
 Description: Allows you to edit your custom fields in bulk. Works with custom post types.
 Author: SparkWeb Interactive, Inc.
-Version: 1.1
+Version: 1.2
 Author URI: http://www.soapboxdave.com/
 
 **************************************************************************
@@ -64,7 +64,7 @@ function cfbe_editor() {
 	echo '<h2>Edit Custom Fields For ' . $obj->labels->name . '</h2>';
 
 	//Saved Notice
-	if (isset($_GET['saved'])) echo '<div class="updated"><p>' . __('Custom Field Values Have Been Saved.') . '</p></div>';
+	if (isset($_GET['saved'])) echo '<div class="updated"><p>' . __('Success! Custom field values have been saved.') . '</p></div>';
 	
 	echo "<br />";
 	
@@ -152,7 +152,7 @@ function cfbe_editor() {
 		</tbody>
 	</table>
 	
-	<br /><br />
+	<?php do_action('cfbe_before_metabox', $post_type); ?>
 
 	<table class="widefat cfbe_table">
 		<thead>
@@ -162,6 +162,7 @@ function cfbe_editor() {
 		</thead>
 		<tbody>
 			<?php
+			do_action('cfbe_before_fields', $post_type);
 			for ($i = 1; $i <= 3; $i++) :
 			?>
 			<tr>
@@ -244,9 +245,11 @@ function cfbe_save() {
 	//Loop Through Each Saved Post
 	foreach ($posts AS $post) {
 		$post_id = $post;
+		
+		do_action('cfbe_save_fields', $post_type, $post_id);
 		for($i=1; $i<=$_POST['cfbe_current_max']; $i++) {
 			if (!empty($_POST['cfbe_name_'.$i])) {
-				echo 'EDIT ' . $post_id . ': ' . $_POST['cfbe_name_'.$i] . ' = ' . $_POST['cfbe_value_'.$i] . '<br />';
+				//echo 'EDIT ' . $post_id . ': ' . $_POST['cfbe_name_'.$i] . ' = ' . $_POST['cfbe_value_'.$i] . '<br />';
 				cfbe_save_meta_data($_POST['cfbe_name_'.$i], $_POST['cfbe_value_'.$i]);
 			}
 		}
@@ -391,4 +394,5 @@ function cfbe_create_settings() {
 	}
 	update_option("cfbe_post_types", serialize($cfbe_post_types));
 }
+
 ?>
