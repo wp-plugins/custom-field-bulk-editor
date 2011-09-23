@@ -29,7 +29,7 @@ You can add your own metabox to enter special data or you can just add some rows
 
 [Sample Code For Adding Your Own Extra Save Lines](http://pastebin.com/jBtyBtKv) (see screenshots for how this looks)
 
-To see a complete integration example, download the [FoxyShop](http://wordpress.org/extend/plugins/foxyshop/) plugin and look in the `customposttype.php` file. Just search for the `cfbe` functions toward the end.
+To see a complete integration example, download the [FoxyShop](http://wordpress.org/extend/plugins/foxyshop/) plugin and look in the `bulkeditor.php` file.
 
 
 == Installation ==
