@@ -5,7 +5,7 @@ Plugin Name: Custom Field Bulk Editor
 Plugin URI: http://wordpress.org/extend/plugins/custom-field-bulk-editor/
 Description: Allows you to edit your custom fields in bulk. Works with custom post types.
 Author: SparkWeb Interactive, Inc.
-Version: 1.2
+Version: 1.3
 Author URI: http://www.soapboxdave.com/
 
 **************************************************************************
@@ -254,8 +254,8 @@ function cfbe_save() {
 			}
 		}
 	}
-
-	header("Location: edit.php?post_type=$post_type&page=cfbe_editor-$post_type&saved=1");
+	if ($post_type != "post") $p = "post_type=$post_type&";
+	header("Location: edit.php?" . $p . "page=cfbe_editor-$post_type&saved=1");
 	die;
 }
 
