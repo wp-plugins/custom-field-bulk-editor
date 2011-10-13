@@ -50,7 +50,7 @@ By default the plugin will be enabled for all post types but you can go to the s
 == Changelog ==
 
 = 1.3 (10/13/2011) =
-* Fixed redirect error when saving posts
+* Fixed redirect error when saving custom fields for posts
 * Tested for WordPress 3.3
 
 = 1.2 (8/28/2011) =
