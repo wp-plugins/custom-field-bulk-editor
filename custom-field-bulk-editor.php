@@ -254,8 +254,8 @@ function cfbe_save() {
 			}
 		}
 	}
-	if ($post_type != "post") $p = "post_type=$post_type&";
-	header("Location: edit.php?" . $p . "page=cfbe_editor-$post_type&saved=1");
+	$post_link = $post_type != "post" ? "post_type=$post_type&" : "";
+	header("Location: edit.php?" . $post_link . "page=cfbe_editor-$post_type&saved=1");
 	die;
 }
 
