@@ -5,7 +5,7 @@ Plugin Name: Custom Field Bulk Editor
 Plugin URI: http://wordpress.org/extend/plugins/custom-field-bulk-editor/
 Description: Allows you to edit your custom fields in bulk. Works with custom post types.
 Author: SparkWeb Interactive, Inc.
-Version: 1.3
+Version: 1.3.1
 Author URI: http://www.soapboxdave.com/
 
 **************************************************************************
@@ -93,7 +93,10 @@ function cfbe_editor() {
 		$tax_name = $tax->label;
 		if (isset($_GET[$taxonomy])) {
 			$query_slug = $_GET[$taxonomy];
-			$args[$taxonomy] = $_GET[$taxonomy];
+			$arg_taxonomy = $taxonomy;
+			if ($arg_taxonomy == "post_tag") $arg_taxonomy = "tag";
+			if ($arg_taxonomy == "category") $arg_taxonomy = "category_name";
+			if ($query_slug != "") $args[$arg_taxonomy] = $_GET[$taxonomy];
 		} else {
 			$query_slug = "";
 		}
@@ -115,8 +118,7 @@ function cfbe_editor() {
 	echo '<input type="hidden" name="cfbe_current_max" id="cfbe_current_max" value="3" />'."\n";
 	echo '<input type="hidden" name="cfbe_post_type" value="' . htmlspecialchars($post_type) . '" />'."\n";
 	wp_nonce_field('cfbe-save');
-	
-	
+
 	$all_posts = get_posts($args);
 	?>
 	<table cellspacing="0" class="wp-list-table widefat fixed posts">
