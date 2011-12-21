@@ -16,6 +16,10 @@
 	width: 140px;
 	margin-right: 30px;
 }
+.cfbe_table th img {
+    float: left;
+    margin: 1px 5px 0 0;
+}
 .cfbe_field_value {
 	width: 370px;
 	height: 45px;
@@ -54,3 +58,4 @@ table.cfbe_table small {
 .cfbe_field_name.no_right_margin, .no_right_margin {
 	margin-right: 0;
 }
+
