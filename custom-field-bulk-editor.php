@@ -5,7 +5,7 @@ Plugin Name: Custom Field Bulk Editor
 Plugin URI: http://wordpress.org/extend/plugins/custom-field-bulk-editor/
 Description: Allows you to edit your custom fields in bulk. Works with custom post types.
 Author: SparkWeb Interactive, Inc.
-Version: 1.3.1
+Version: 1.3.2
 Author URI: http://www.soapboxdave.com/
 
 **************************************************************************
@@ -35,7 +35,15 @@ function cfbe_init() {
 
 	//Create or Set Settings
 	global $cfbe_post_types;
-	$cfbe_post_types = unserialize(get_option("cfbe_post_types"));
+	$cfbe_post_types = get_option("cfbe_post_types");
+	
+	//Check for Double Serialization
+	if (is_serialized($cfbe_post_types)) {
+		$cfbe_post_types = unserialize($cfbe_post_types);
+		update_option("cfbe_post_types", $cfbe_post_types);
+	}
+	
+	//Create Settings if New
 	if (!is_array($cfbe_post_types)) cfbe_create_settings();
 
 	//Create Menus
@@ -43,7 +51,7 @@ function cfbe_init() {
 	$skip_array = array("revision", "attachment", "nav_menu_item");
 	foreach ($post_types as $post_type ) {
 		if (in_array($post_type, $skip_array)) continue;
-		if (in_array($post_type, $cfbe_post_types)) add_submenu_page("edit.php".($post_type != "post" ? "?post_type=".$post_type : ""), __('Edit Custom Fields'), __('Edit Custom Fields'), 'manage_options', 'cfbe_editor-'.$post_type, 'cfbe_editor');
+		if (in_array($post_type, $cfbe_post_types)) add_submenu_page("edit.php".($post_type != "post" ? "?post_type=".$post_type : ""), __('Bulk Edit Fields'), __('Bulk Edit Fields'), 'manage_options', 'cfbe_editor-'.$post_type, 'cfbe_editor');
 	}
 	
 	if (isset($_REQUEST['page'])) {
@@ -331,7 +339,7 @@ function cfbe_save_settings() {
 	foreach ($post_types as $post_type ) {
 		if (isset($_POST['cfbe_post_type_'.$post_type])) $cfbe_post_types[] = $post_type;
 	}
-	update_option("cfbe_post_types", serialize($cfbe_post_types));
+	update_option("cfbe_post_types", $cfbe_post_types);
 
 	header("Location: options-general.php?page=cfbe_settings&saved=1");
 	die;
@@ -394,7 +402,7 @@ function cfbe_create_settings() {
 		if (in_array($post_type, $skip_array)) continue;
 		$cfbe_post_types[] = $post_type;
 	}
-	update_option("cfbe_post_types", serialize($cfbe_post_types));
+	update_option("cfbe_post_types", $cfbe_post_types);
 }
 
 ?>
