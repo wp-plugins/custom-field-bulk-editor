@@ -72,4 +72,5 @@ By default the plugin will be enabled for all post types but you can go to the s
 
 == Upgrade Notice ==
 
+= 1.3.2 =
 Changed menu name to "Bulk Edit Fields" and corrected double serialization
