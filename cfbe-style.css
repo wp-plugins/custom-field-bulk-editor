@@ -12,18 +12,17 @@
 .cfbe_table input[type=checkbox], .cfbe_table input[type=radio] {
 	margin: 9px 4px 5px 0;
 }
-.cfbe_table .cfbe_field_name {
+.cfbe_table .cfbe_field_name, .cfbe_multi_fieldname {
 	width: 140px;
 	margin-right: 30px;
 }
-.cfbe_table th img {
-    float: left;
-    margin: 1px 5px 0 0;
-}
-.cfbe_field_value {
+.cfbe_field_value, .cfbe_multi_fieldvalue {
 	width: 370px;
 	height: 45px;
 	float: left;
+}
+table .cfbe_multi_fieldvalue {
+	width: 100%;
 }
 .cfbe_hint {
 	color: darkgray;
@@ -58,4 +57,3 @@ table.cfbe_table small {
 .cfbe_field_name.no_right_margin, .no_right_margin {
 	margin-right: 0;
 }
-

@@ -5,7 +5,7 @@ Plugin Name: Custom Field Bulk Editor
 Plugin URI: http://wordpress.org/extend/plugins/custom-field-bulk-editor/
 Description: Allows you to edit your custom fields in bulk. Works with custom post types.
 Author: SparkWeb Interactive, Inc.
-Version: 1.3.2
+Version: 1.4
 Author URI: http://www.soapboxdave.com/
 
 **************************************************************************
@@ -36,13 +36,13 @@ function cfbe_init() {
 	//Create or Set Settings
 	global $cfbe_post_types;
 	$cfbe_post_types = get_option("cfbe_post_types");
-	
+
 	//Check for Double Serialization
 	if (is_serialized($cfbe_post_types)) {
 		$cfbe_post_types = unserialize($cfbe_post_types);
 		update_option("cfbe_post_types", $cfbe_post_types);
 	}
-	
+
 	//Create Settings if New
 	if (!is_array($cfbe_post_types)) cfbe_create_settings();
 
@@ -51,9 +51,9 @@ function cfbe_init() {
 	$skip_array = array("revision", "attachment", "nav_menu_item");
 	foreach ($post_types as $post_type ) {
 		if (in_array($post_type, $skip_array)) continue;
-		if (in_array($post_type, $cfbe_post_types)) add_submenu_page("edit.php".($post_type != "post" ? "?post_type=".$post_type : ""), __('Bulk Edit Fields'), __('Bulk Edit Fields'), 'manage_options', 'cfbe_editor-'.$post_type, 'cfbe_editor');
+		if (in_array($post_type, $cfbe_post_types)) add_submenu_page("edit.php".($post_type != "post" ? "?post_type=".$post_type : ""), __('Bulk Edit Fields'), __('Bulk Edit Fields'), apply_filters('cfbe_menu_display_' . $post_type, 'manage_options'), 'cfbe_editor-'.$post_type, 'cfbe_editor');
 	}
-	
+
 	if (isset($_REQUEST['page'])) {
 		if (strpos($_REQUEST['page'], "cfbe_editor-") !== false) {
 			wp_enqueue_style('cfbe-style', WP_PLUGIN_URL."/custom-field-bulk-editor/cfbe-style.css");
@@ -66,24 +66,30 @@ function cfbe_init() {
 function cfbe_editor() {
 	$post_type = str_replace("cfbe_editor-", "", $_REQUEST['page']);
 	$obj = get_post_type_object($post_type);
-	
+
+	$edit_mode = isset($_REQUEST['edit_mode']) ? $_REQUEST['edit_mode'] : 'single';
+	$edit_mode_button =  ' <a class="' . (version_compare(get_bloginfo('version'), '3.2', "<") ? "button " : "") . 'add-new-h2" href="edit.php?post_type=' . $post_type . '&page=cfbe_editor-page&edit_mode=' . ($edit_mode == "single" ? "multi" : "single") . '">' . ($edit_mode == "single" ? __("Switch to Multi Value Mode") : __("Switch to Single Value Mode")) . '</a>';
+
 	echo '<div class="wrap">';
 	echo '<div class="icon32 icon32-posts-page" id="icon-edit-pages"><br></div>';
-	echo '<h2>Edit Custom Fields For ' . $obj->labels->name . '</h2>';
+	echo '<h2>Edit Custom Fields For ' . $obj->labels->name . $edit_mode_button . '</h2>';
 
 	//Saved Notice
 	if (isset($_GET['saved'])) echo '<div class="updated"><p>' . __('Success! Custom field values have been saved.') . '</p></div>';
-	
+
 	echo "<br />";
-	
+
 	echo '<form action="edit.php" name="cfbe_form_1" id="cfbe_form_1" method="get">';
 	if ($post_type != "post") echo '<input type="hidden" name="post_type" value="' . htmlspecialchars($post_type) . '" />'."\n";
 	echo '<input type="hidden" name="page" value="cfbe_editor-' . htmlspecialchars($post_type) . '" />'."\n";
-	
+	echo '<input type="hidden" name="edit_mode" value="' . htmlspecialchars($edit_mode) . '" />'."\n";
+
 	$args = array(
 		"post_type" => $post_type,
 		"posts_per_page" => -1,
-		"post_status" => array("publish", "pending", "draft", "future", "private")
+		"post_status" => array("publish", "pending", "draft", "future", "private"),
+		"order" => "ASC",
+		"orderby" => "id",
 	);
 
 	if (isset($_GET['searchtext'])) {
@@ -120,29 +126,38 @@ function cfbe_editor() {
 	echo '<input type="text" name="searchtext" id="searchtext" value="' . $searchtext . '" />';
 	echo '<input type="submit" value="Apply" class="button" />';
 	echo '</form>'."\n\n";
-	
+
 	echo '<form action="options.php" name="cfbe_form_2" id="cfbe_form_2" method="post">';
 	echo '<input type="hidden" name="cfbe_save" value="1" />'."\n";
 	echo '<input type="hidden" name="cfbe_current_max" id="cfbe_current_max" value="3" />'."\n";
 	echo '<input type="hidden" name="cfbe_post_type" value="' . htmlspecialchars($post_type) . '" />'."\n";
+	echo '<input type="hidden" name="edit_mode" value="' . htmlspecialchars($edit_mode) . '" />'."\n";
 	wp_nonce_field('cfbe-save');
 
 	$all_posts = get_posts($args);
 	?>
-	<table cellspacing="0" class="wp-list-table widefat fixed posts">
+	<table cellspacing="0" class="wp-list-table widefat fixed posts cfbe-table">
 	<thead>
 	<tr>
-		<th style="" class="manage-column column-cb check-column" id="cb" scope="col"><input type="checkbox"></th>
-		<th style="" class="manage-column column-id" id="id" scope="col">ID</th>
-		<th style="" class="manage-column column-title desc" id="title" scope="col"><span>Title</span></th>
+		<?php if ($edit_mode == "single") { ?><th class="manage-column column-cb check-column" id="cb" scope="col"><input type="checkbox"></th><?php } ?>
+		<th style="" class="manage-column column-id" id="id" scope="col"><?php _e("ID") ?></th>
+		<th style="" class="manage-column column-title desc" id="title" scope="col"><span><?php _e("Title") ?></span></th>
+		<?php if ($edit_mode == "multi") { ?>
+		<th class="manage-column column-fieldname desc" id="fieldname" scope="col"><span><?php _e("Field Name") ?></span></th>
+		<th class="manage-column column-fieldvalue desc" id="fieldname" scope="col"><span><?php _e("Field Value") ?></span></th>
+		<?php } ?>
 	</tr>
 	</thead>
 
 	<tfoot>
 	<tr>
-		<th style="" class="manage-column column-cb check-column" id="cb" scope="col"><input type="checkbox"></th>
-		<th style="" class="manage-column column-id" id="id" scope="col">ID</th>
-		<th style="" class="manage-column column-title desc" id="title" scope="col"><span>Title</span></th>
+		<?php if ($edit_mode == "single") { ?><th class="manage-column column-cb check-column" id="cb" scope="col"><input type="checkbox"></th><?php } ?>
+		<th style="" class="manage-column column-id" id="id" scope="col"><?php _e("ID") ?></th>
+		<th style="" class="manage-column column-title desc" id="title" scope="col"><span><?php _e("Title") ?></span></th>
+		<?php if ($edit_mode == "multi") { ?>
+		<th class="manage-column column-fieldname desc" id="fieldname" scope="col"><span><?php _e("Field Name") ?></span></th>
+		<th class="manage-column column-fieldvalue desc" id="fieldname" scope="col"><span><?php _e("Field Value") ?></span></th>
+		<?php } ?>
 	</tr>
 	</tfoot>
 
@@ -150,19 +165,29 @@ function cfbe_editor() {
 
 	<?php
 	$i = 1;
+	$tabindex = 10000;
 	foreach ($all_posts AS $post) {
-		echo '<tr valign="top" class="' . ($i % 2 ? 'alternate ' : '') . 'format-default" id="post-' . $post->ID . '">';
-		echo '<th class="check-column" scope="row" style="padding: 9px 0;"><input type="checkbox" value="' . $post->ID . '" name="post[]"></th>';
+		echo '<tr valign="top" class="' . ($i % 2 ? 'alternate ' : '') . 'format-default" id="post-' . $post->ID . '" rel="' . $i . '">';
+		if ($edit_mode == "single") echo '<th class="check-column" scope="row" style="padding: 9px 0;"><input type="checkbox" value="' . $post->ID . '" name="post[]"></th>';
 		echo '<td class="id column-id">' . $post->ID . '</td>';
 		echo '<td class="post-title page-title column-title"><strong><a title="Edit" href="post.php?post=' . $post->ID . '&amp;action=edit" class="row-title">' . $post->post_title . '</a>' . ($post->post_status != 'publish' ? ' - ' . ucwords($post->post_status) : '') . '</strong></td>';
+		if ($edit_mode == "multi") {
+			echo '<input type="hidden" value="' . $post->ID . '" name="post[]">' . "\n";
+			echo '<td class="post-fieldname column-fieldname"><input type="text" name="cfbe_multi_fieldname_' . $post->ID . '" id="cfbe_multi_fieldname_' . $post->ID . '" value="" class="cfbe_multi_fieldname" tabindex="' . ($tabindex) .'" /> <a href="#" class="fill_down button" rel="' . $post->ID . '">Fill</a></td>';
+			echo '<td class="post-fieldvalue column-fieldnvalue"><textarea name="cfbe_multi_fieldvalue_' . $post->ID . '" id="cfbe_multi_fieldvalue_' . $post->ID . '" class="cfbe_multi_fieldvalue" tabindex="' . ($tabindex + 1) .'"></textarea></td>';
+		}
 		echo "</tr>\n";
 		$i++;
+		$tabindex = $tabindex + 2;
 	}
 	?>
 		</tbody>
 	</table>
-	
-	<?php do_action('cfbe_before_metabox', $post_type); ?>
+
+	<?php
+	if ($edit_mode == "single") {
+		do_action('cfbe_before_metabox', $post_type);
+		?>
 
 	<table class="widefat cfbe_table">
 		<thead>
@@ -179,25 +204,26 @@ function cfbe_editor() {
 				<td>
 					<label for="cfbe_name_<?php echo $i; ?>"><?php _e('Custom Field Name'); ?>:</label>
 					<input type="text" name="cfbe_name_<?php echo $i; ?>" id="cfbe_name_<?php echo $i; ?>" value="" class="cfbe_field_name" />
-					
+
 					<label for="cfbe_value_<?php echo $i; ?>"><?php _e('Value'); ?>:</label>
 					<textarea name="cfbe_value_<?php echo $i; ?>" id="cfbe_value_<?php echo $i; ?>" class="cfbe_field_value"></textarea>
-					
+
 					<div style="clear: both;"></div>
-					
+
 				</td>
 			</tr>
 			<?php endfor; ?>
 			<tr id="cfbe_more_tr">
 				<td>
 					<input type="button" id="cfbe_morebutton" name="cfbe_morebutton" class="button" value="<?php _e('Add More Fields'); ?>" />
-					<span class="cfbe_hint">Hint: To remove a field from a record, enter its name and leave its value empty</span> 
-					
+					<span class="cfbe_hint">Hint: To remove a field from a record, enter its name and leave its value empty</span>
+
 				</td>
 
 			</tr>
 		</tbody>
 	</table>
+	<?php } ?>
 	<p><input type="submit" class="button-primary" value="<?php _e('Save Custom Fields'); ?>" /></p>
 	</form>
 
@@ -229,11 +255,23 @@ function cfbe_editor() {
 			return false;
 		});
 
+		$(".fill_down").click(function() {
+			var fieldname = $("#cfbe_multi_fieldname_" + $(this).attr("rel")).val();
+			var parent_rel = $(this).parents("tr").attr("rel");
+			$(".cfbe-table > tbody > tr").each(function() {
+				this_rel = $(this).attr("rel");
+				if (parseInt(this_rel) > parseInt(parent_rel)) {
+					$(this).find(".cfbe_multi_fieldname").val(fieldname);
+				}
+			});
+			return false;
+		});
+
 	});
 	</script>
 
 	<?php
-	
+
 	echo '</form>';
 	echo '</div">';
 }
@@ -243,7 +281,7 @@ function cfbe_editor() {
 add_action('admin_init', 'cfbe_save');
 function cfbe_save() {
 	global $post_id;
-	
+
 	//Bail if not called or authenticated
 	$actionkey = (isset($_POST['cfbe_save']) ? $_POST['cfbe_save'] : "");
 	if ($actionkey != "1" || !check_admin_referer('cfbe-save')) return;
@@ -251,21 +289,35 @@ function cfbe_save() {
 	//Setup
 	$post_type = (isset($_POST['cfbe_post_type']) ? $_POST['cfbe_post_type'] : "");
 	$posts = (isset($_POST['post']) ? $_POST['post'] : array());
-	
+	$edit_mode = $_POST['edit_mode'] == "multi" ? "multi" : "single";
+
 	//Loop Through Each Saved Post
 	foreach ($posts AS $post) {
 		$post_id = $post;
-		
-		do_action('cfbe_save_fields', $post_type, $post_id);
-		for($i=1; $i<=$_POST['cfbe_current_max']; $i++) {
-			if (!empty($_POST['cfbe_name_'.$i])) {
-				//echo 'EDIT ' . $post_id . ': ' . $_POST['cfbe_name_'.$i] . ' = ' . $_POST['cfbe_value_'.$i] . '<br />';
-				cfbe_save_meta_data($_POST['cfbe_name_'.$i], $_POST['cfbe_value_'.$i]);
+
+		//Multi Value
+		if ($edit_mode == "multi") {
+			if (!empty($_POST['cfbe_multi_fieldname_'.$post_id])) {
+				//echo 'EDIT ' . $post_id . ': ' . $_POST['cfbe_multi_fieldname_'.$post_id] . ' = ' . $_POST['cfbe_multi_fieldvalue_'.$post_id] . '<br />';
+				cfbe_save_meta_data($_POST['cfbe_multi_fieldname_'.$post_id], $_POST['cfbe_multi_fieldvalue_'.$post_id]);
+			}
+
+
+		//Single Value
+		} else {
+
+			do_action('cfbe_save_fields', $post_type, $post_id);
+			for($i=1; $i<=$_POST['cfbe_current_max']; $i++) {
+				if (!empty($_POST['cfbe_name_'.$i])) {
+					echo 'EDIT ' . $post_id . ': ' . $_POST['cfbe_name_'.$i] . ' = ' . $_POST['cfbe_value_'.$i] . '<br />';
+					//cfbe_save_meta_data($_POST['cfbe_name_'.$i], $_POST['cfbe_value_'.$i]);
+				}
 			}
 		}
 	}
+
 	$post_link = $post_type != "post" ? "post_type=$post_type&" : "";
-	header("Location: edit.php?" . $post_link . "page=cfbe_editor-$post_type&saved=1");
+	header("Location: edit.php?" . $post_link . "page=cfbe_editor-$post_type&edit_mode=$edit_mode&saved=1");
 	die;
 }
 
@@ -277,10 +329,10 @@ function cfbe_settings_menu() {
 }
 function cfbe_settings() {
 	global $cfbe_post_types;
-	
+
 	echo '<div class="wrap">';
 	echo '<div class="icon32" id="icon-options-general"><br></div>';
-	echo '<h2>Custom Fields Bulk Editor Settings</h2>';
+	echo '<h2>' . __('Custom Fields Bulk Editor Settings') . '</h2>';
 
 	//Saved Notice
 	if (isset($_GET['saved'])) echo '<div class="updated"><p>' . __('Your Settings Have Been Saved.') . '</p></div>';
@@ -288,7 +340,7 @@ function cfbe_settings() {
 	echo '<form action="options.php" name="cfbe_form_1" id="cfbe_form_1" method="post">';
 	echo '<input type="hidden" name="cfbe_settings_save" value="1" />'."\n";
 	wp_nonce_field('cfbe-settings-save');
-	
+
 	?>
 	<br />
 
@@ -311,7 +363,7 @@ function cfbe_settings() {
 					<input type="checkbox" name="cfbe_post_type_<?php echo $post_type; ?>" id="cfbe_post_type_<?php echo $post_type; ?>"<?php if (in_array($post_type, $cfbe_post_types)) echo ' checked="checked"'; ?> />
 					<label for="cfbe_post_type_<?php echo $post_type; ?>"><?php echo $obj->labels->name; ?></label>
 					<div style="clear: both;"></div>
-					
+
 				</td>
 			</tr>
 			<?php endforeach; ?>
@@ -319,7 +371,7 @@ function cfbe_settings() {
 	</table>
 	<p><input type="submit" class="button-primary" value="<?php _e('Save Settings'); ?>" /></p>
 	</form>
-	
+
 	<div style="clear: both;"></div>
 	<?php
 }
@@ -327,11 +379,11 @@ function cfbe_settings() {
 //Save Settings
 add_action('admin_init', 'cfbe_save_settings');
 function cfbe_save_settings() {
-	
+
 	//Bail if not called or authenticated
 	$actionkey = (isset($_POST['cfbe_settings_save']) ? $_POST['cfbe_settings_save'] : "");
 	if ($actionkey != "1" || !check_admin_referer('cfbe-settings-save')) return;
-	
+
 	//Save Settings
 	$cfbe_post_types = array();
 	$post_types = get_post_types();
@@ -351,7 +403,7 @@ function cfbe_save_settings() {
 //Saving Functions
 function cfbe_save_meta_data($fieldname,$input) {
 	global $post_id;
-	$current_data = get_post_meta($post_id, $fieldname, TRUE);	
+	$current_data = get_post_meta($post_id, $fieldname, TRUE);
  	$new_data = $input;
  	if (!$new_data || $new_data == "") $new_data = NULL;
  	cfbe_meta_clean($new_data);

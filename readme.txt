@@ -4,7 +4,7 @@ Donate link: http://www.soapboxdave.com/
 Tags: custom fields, bulk, editor, custom post type
 Requires at least: 3.0
 Tested up to: 3.4.1
-Stable tag: 1.3.2
+Stable tag: 1.4
 This plugin lets you edit the custom fields for many posts at once. Designed to work with pages, posts, and all custom post types.
 
 == Description ==
@@ -31,6 +31,10 @@ You can add your own metabox to enter special data or you can just add some rows
 
 To see a complete integration example, download the [FoxyShop](http://wordpress.org/extend/plugins/foxyshop/) plugin and look in the `bulkeditor.php` file.
 
+= What is the difference between single value and multi value mode? =
+
+Single Value Mode lets you set a single value for all checked postes. Multi Value Mode lets you set a different custom field and value for each post at once. Action hooks are not run in Multi Value mode.
+
 
 == Installation ==
 
@@ -48,6 +52,10 @@ By default the plugin will be enabled for all post types but you can go to the s
 
 
 == Changelog ==
+
+= 1.4 (7/12/2012) =
+* Added multi-value mode
+* Added filter to allow customized role display
 
 = 1.3.2 (3/2/2012) =
 * Changed menu name from "Edit Custom Fields" to "Bulk Edit Fields" for better recognition
@@ -72,5 +80,4 @@ By default the plugin will be enabled for all post types but you can go to the s
 
 == Upgrade Notice ==
 
-= 1.3.2 =
 Changed menu name to "Bulk Edit Fields" and corrected double serialization
