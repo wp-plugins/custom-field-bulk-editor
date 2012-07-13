@@ -5,7 +5,7 @@ Plugin Name: Custom Field Bulk Editor
 Plugin URI: http://wordpress.org/extend/plugins/custom-field-bulk-editor/
 Description: Allows you to edit your custom fields in bulk. Works with custom post types.
 Author: SparkWeb Interactive, Inc.
-Version: 1.4
+Version: 1.4.1
 Author URI: http://www.soapboxdave.com/
 
 **************************************************************************
@@ -68,7 +68,7 @@ function cfbe_editor() {
 	$obj = get_post_type_object($post_type);
 
 	$edit_mode = isset($_REQUEST['edit_mode']) ? $_REQUEST['edit_mode'] : 'single';
-	$edit_mode_button =  ' <a class="' . (version_compare(get_bloginfo('version'), '3.2', "<") ? "button " : "") . 'add-new-h2" href="edit.php?post_type=' . $post_type . '&page=cfbe_editor-page&edit_mode=' . ($edit_mode == "single" ? "multi" : "single") . '">' . ($edit_mode == "single" ? __("Switch to Multi Value Mode") : __("Switch to Single Value Mode")) . '</a>';
+	$edit_mode_button =  ' <a class="' . (version_compare(get_bloginfo('version'), '3.2', "<") ? "button " : "") . 'add-new-h2" href="edit.php?' . ($post_type != "post" ? "post_type=$post_type&" : "") . 'page=cfbe_editor-' . $post_type . '&edit_mode=' . ($edit_mode == "single" ? "multi" : "single") . '">' . ($edit_mode == "single" ? __("Switch to Multi Value Mode") : __("Switch to Single Value Mode")) . '</a>';
 
 	echo '<div class="wrap">';
 	echo '<div class="icon32 icon32-posts-page" id="icon-edit-pages"><br></div>';
