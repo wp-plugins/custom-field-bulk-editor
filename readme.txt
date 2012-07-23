@@ -4,7 +4,7 @@ Donate link: http://www.soapboxdave.com/
 Tags: custom fields, bulk, editor, custom post type
 Requires at least: 3.0
 Tested up to: 3.4.1
-Stable tag: 1.4.1
+Stable tag: 1.5
 This plugin lets you edit the custom fields for many posts at once. Designed to work with pages, posts, and all custom post types.
 
 == Description ==
@@ -53,6 +53,10 @@ By default the plugin will be enabled for all post types but you can go to the s
 
 == Changelog ==
 
+= 1.5 (7/23/2012) =
+* Added a bulk editor for multi-value mode so that names and values can be pasted into a textarea
+* FIX: Removed testing mode from single value mode
+
 = 1.4.1 (7/12/2012) =
 * Fixed mistaken multi-value mode link for posts
 
@@ -83,4 +87,4 @@ By default the plugin will be enabled for all post types but you can go to the s
 
 == Upgrade Notice ==
 
-Changed menu name to "Bulk Edit Fields" and corrected double serialization
+Added bulk editor for multi-value mode and fixed (removed) testing mode on single value mode
