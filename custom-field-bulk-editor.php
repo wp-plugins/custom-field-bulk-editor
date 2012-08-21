@@ -244,6 +244,29 @@ function cfbe_editor() {
 			</tr>
 		</tbody>
 	</table>
+
+	<!-- Rename Custom Field Name -->
+	<p><a href="#" id="change_cf_name"><?php _e('Want to change a custom field name?'); ?></a></p>
+	<table class="widefat cfbe_table" id="change_cf_name_table" style="display: none;">
+		<thead>
+			<tr>
+				<th><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QAAAAAAAD5Q7t/AAABM0lEQVR42sWSv0sCcRjGP/mDhiSCTEUQCa4xcGhqcKjBCKGlza2lxT+gob8naEtuSIgMd8WpLTy973EcceqJh1zp3bepg2gpL+iBF97pfT/P+7zwBzoH5IpVW4vF4vL2ponvB/hL/8dbhRBcXV+SCAIfz3vn6aHzK+y554a9rNfrMoIN5Crq9/sSkLGoCSQ+m7eXZxbmEN/USRYVBsU8YiTQxzpKRiG/vodh2RiWzW4hSyGdAiAkWJhDUuVT4js53FYDMRJU9ivkNnOoPRXDsjk+LJHZ3qLZ7oYE4QDf1HEf71gaGsF0gj7WUXsqg9EAZ+5gWDb37Q66+Yozc79bSBYV3FaDYDph4+gMJZNG7ak4c4dqqUpaZmm2uzgzl5PywZc7REohJNA0beUkahGe6IJ/1wc0yhZckNURBgAAAABJRU5ErkJggg==" alt="" /><?php _e('Change Custom Field Name'); ?></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>
+					<label for="cfbe_fieldname_1"><?php _e('Original Custom Field Name'); ?>:</label>
+					<input type="text" name="cfbe_fieldname_1" id="cfbe_fieldname_1" value="" class="cfbe_field_name" />
+					<label for="cfbe_fieldname_2"><?php _e('New Custom Field Name'); ?>:</label>
+					<input type="text" name="cfbe_fieldname_2" id="cfbe_fieldname_2" value="" class="cfbe_field_name" />
+					<div style="clear: both;"></div>
+
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
 	<?php } ?>
 	<p><input type="submit" class="button-primary" value="<?php _e('Save Custom Fields'); ?>" /></p>
 	</form>
@@ -252,6 +275,13 @@ function cfbe_editor() {
 
 	<script type="text/javascript">
 	jQuery(document).ready(function($){
+
+		$("#change_cf_name").click(function() {
+			$(this).hide();
+			$("#change_cf_name_table").show();
+			$("#cfbe_fieldname_1").focus();
+			return false;
+		});
 
 		//Set To Make Sure We Aren't Getting Funny Values
 		$("#cfbe_current_max").val(3);
@@ -301,7 +331,7 @@ function cfbe_editor() {
 //Save Custom Field
 add_action('admin_init', 'cfbe_save');
 function cfbe_save() {
-	global $post_id;
+	global $post_id, $wpdb;
 
 	//Bail if not called or authenticated
 	$actionkey = (isset($_POST['cfbe_save']) ? $_POST['cfbe_save'] : "");
@@ -364,6 +394,15 @@ function cfbe_save() {
 				}
 			}
 		}
+
+		//Change Field Name
+		if (isset($_POST['cfbe_fieldname_1']) && isset($_POST['cfbe_fieldname_2'])) {
+			if ($_POST['cfbe_fieldname_1'] && $_POST['cfbe_fieldname_2']) {
+				$sql = "UPDATE $wpdb->postmeta SET meta_key = '" . mysql_real_escape_string($_POST['cfbe_fieldname_2']) . "' WHERE post_id = $post_id AND meta_key = '" . mysql_real_escape_string($_POST['cfbe_fieldname_1']) . "'";
+				$wpdb->query("UPDATE $wpdb->postmeta SET meta_key = '" . mysql_real_escape_string($_POST['cfbe_fieldname_2']) . "' WHERE post_id = $post_id AND meta_key = '" . mysql_real_escape_string($_POST['cfbe_fieldname_1']) . "'");
+			}
+		}
+
 		$current_record_count++;
 	}
 

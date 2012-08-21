@@ -4,7 +4,7 @@ Donate link: http://www.soapboxdave.com/
 Tags: custom fields, bulk, editor, custom post type
 Requires at least: 3.0
 Tested up to: 3.4.1
-Stable tag: 1.5
+Stable tag: 1.6
 This plugin lets you edit the custom fields for many posts at once. Designed to work with pages, posts, and all custom post types.
 
 == Description ==
@@ -35,6 +35,9 @@ To see a complete integration example, download the [FoxyShop](http://wordpress.
 
 Single Value Mode lets you set a single value for all checked postes. Multi Value Mode lets you set a different custom field and value for each post at once. Action hooks are not run in Multi Value mode.
 
+= Can I change the name of some custom fields? =
+
+Yes. Click the link "Want to change a custom field name?" at the bottom of the Single Value Mode form and you'll be able to enter the original field name and the new field name.
 
 == Installation ==
 
@@ -52,6 +55,9 @@ By default the plugin will be enabled for all post types but you can go to the s
 
 
 == Changelog ==
+
+= 1.6 (8/21/2012) =
+* Added a feature to allow the changing of field names
 
 = 1.5 (7/23/2012) =
 * Added a bulk editor for multi-value mode so that names and values can be pasted into a textarea
