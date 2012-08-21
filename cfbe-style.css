@@ -1,0 +1,59 @@
+.cfbe_table td input, .cfbe_table td select {
+	margin: 5px 0;
+	float: left;
+}
+.cfbe_table {
+	margin-top: 30px;
+}
+.cfbe_table label {
+	float: left;
+	margin: 7px 5px 0 0;
+}
+.cfbe_table input[type=checkbox], .cfbe_table input[type=radio] {
+	margin: 9px 4px 5px 0;
+}
+.cfbe_table .cfbe_field_name, .cfbe_multi_fieldname {
+	width: 140px;
+	margin-right: 30px;
+}
+.cfbe_field_value, .cfbe_multi_fieldvalue {
+	width: 370px;
+	height: 45px;
+	float: left;
+}
+table .cfbe_multi_fieldvalue {
+	width: 100%;
+}
+.cfbe_hint {
+	color: darkgray;
+	float: left;
+	margin: 9px 0 0 10px;
+}
+#cfbe_form_1 {
+	display: block;
+	margin-bottom: 5px;
+	overflow: auto;
+}
+#cfbe_form_1 select, #searchtext {
+	margin: 0 25px 0 5px;
+}
+#searchtext {
+	width: 110px;
+}
+.cfbe_right_align {
+	float: right;
+}
+.cfbe_leave_unchanged {
+	margin-right: 30px!important;
+}
+table.cfbe_table small {
+	float: left;
+	margin: 9px 0 0 5px;
+}
+.cfbe_special_label {
+	width: 120px;
+	font-weight: bold;
+}
+.cfbe_field_name.no_right_margin, .no_right_margin {
+	margin-right: 0;
+}
