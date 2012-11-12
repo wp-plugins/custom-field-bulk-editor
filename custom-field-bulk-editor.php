@@ -5,7 +5,7 @@ Plugin Name: Custom Field Bulk Editor
 Plugin URI: http://wordpress.org/extend/plugins/custom-field-bulk-editor/
 Description: Allows you to edit your custom fields in bulk. Works with custom post types.
 Author: SparkWeb Interactive, Inc.
-Version: 1.6
+Version: 1.7
 Author URI: http://www.soapboxdave.com/
 
 **************************************************************************
@@ -268,7 +268,10 @@ function cfbe_editor() {
 	</table>
 
 	<?php } ?>
-	<p><input type="submit" class="button-primary" value="<?php _e('Save Custom Fields'); ?>" /></p>
+	<p>
+		<input type="submit" class="button-primary" value="<?php _e('Save Custom Fields'); ?>" style="margin-right: 15px;" />
+		<label for="cfbe_add_new_values"><input type="checkbox" name="cfbe_add_new_values" id="cfbe_add_new_values"<?php if (isset($_GET['cfbe_add_new_values'])) echo ' checked="checked"'; ?> /> Add New Custom Fields Instead of Updating (this allows you to create multiple values per name)</label>
+	</p>
 	</form>
 
 	<div style="clear: both;"></div>
@@ -407,7 +410,8 @@ function cfbe_save() {
 	}
 
 	$post_link = $post_type != "post" ? "post_type=$post_type&" : "";
-	header("Location: edit.php?" . $post_link . "page=cfbe_editor-$post_type&edit_mode=$edit_mode&saved=1&multi_value_mode=$multi_value_mode");
+	$cfbe_add_new_values = isset($_POST['cfbe_add_new_values']) ? '&cfbe_add_new_values=1' : '';
+	header("Location: edit.php?" . $post_link . "page=cfbe_editor-$post_type&edit_mode=$edit_mode&saved=1&multi_value_mode=" . $multi_value_mode . $cfbe_add_new_values);
 	die;
 }
 
@@ -497,9 +501,11 @@ function cfbe_save_meta_data($fieldname,$input) {
  	$new_data = $input;
  	if (!$new_data || $new_data == "") $new_data = NULL;
  	cfbe_meta_clean($new_data);
-	if ($current_data) {
-		if (is_null($new_data)) delete_post_meta($post_id,$fieldname);
-		else update_post_meta($post_id,$fieldname,$new_data);
+
+	if ($current_data && is_null($new_data)) {
+		delete_post_meta($post_id,$fieldname);
+	} elseif ($current_data && !isset($_POST['cfbe_add_new_values'])) {
+		update_post_meta($post_id,$fieldname,$new_data);
 	} elseif (!is_null($new_data)) {
 		add_post_meta($post_id,$fieldname,$new_data);
 	}
