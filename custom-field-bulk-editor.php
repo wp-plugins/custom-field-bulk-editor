@@ -5,7 +5,7 @@ Plugin Name: Custom Field Bulk Editor
 Plugin URI: http://wordpress.org/extend/plugins/custom-field-bulk-editor/
 Description: Allows you to edit your custom fields in bulk. Works with custom post types.
 Author: SparkWeb Interactive, Inc.
-Version: 1.7
+Version: 1.7.1
 Author URI: http://www.soapboxdave.com/
 
 **************************************************************************
@@ -48,7 +48,7 @@ function cfbe_init() {
 
 	//Create Menus
 	$post_types = get_post_types();
-	$skip_array = array("revision", "attachment", "nav_menu_item");
+	$skip_array = array("revision", "attachment", "nav_menu_item", "acf");
 	foreach ($post_types as $post_type ) {
 		if (in_array($post_type, $skip_array)) continue;
 		if (in_array($post_type, $cfbe_post_types)) add_submenu_page("edit.php".($post_type != "post" ? "?post_type=".$post_type : ""), __('Bulk Edit Fields'), __('Bulk Edit Fields'), apply_filters('cfbe_menu_display_' . $post_type, 'manage_options'), 'cfbe_editor-'.$post_type, 'cfbe_editor');
@@ -98,6 +98,7 @@ function cfbe_editor() {
 		"post_status" => array("publish", "pending", "draft", "future", "private"),
 		"order" => "ASC",
 		"orderby" => "id",
+		"page" => isset($_GET['page']) ? (int)$_GET['page'] : 1,
 	);
 
 	if (isset($_GET['searchtext'])) {
@@ -447,7 +448,7 @@ function cfbe_settings() {
 		<tbody>
 			<?php
 			$post_types = get_post_types();
-			$skip_array = array("revision", "attachment", "nav_menu_item");
+			$skip_array = array("revision", "attachment", "nav_menu_item", "acf");
 			foreach ($post_types as $post_type ) :
 				if (in_array($post_type, $skip_array)) continue;
 				$obj = get_post_type_object($post_type);
