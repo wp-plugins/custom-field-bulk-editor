@@ -5,12 +5,12 @@ Plugin Name: Custom Field Bulk Editor
 Plugin URI: http://wordpress.org/extend/plugins/custom-field-bulk-editor/
 Description: Allows you to edit your custom fields in bulk. Works with custom post types.
 Author: SparkWeb Interactive, Inc.
-Version: 1.7.1
-Author URI: http://www.soapboxdave.com/
+Version: 1.8
+Author URI: http://www.sparkweb.net/
 
 **************************************************************************
 
-Copyright (C) 2011 SparkWeb Interactive, Inc.
+Copyright (C) 2014 SparkWeb Interactive, Inc.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -56,7 +56,7 @@ function cfbe_init() {
 
 	if (isset($_REQUEST['page'])) {
 		if (strpos($_REQUEST['page'], "cfbe_editor-") !== false) {
-			wp_enqueue_style('cfbe-style', WP_PLUGIN_URL."/custom-field-bulk-editor/cfbe-style.css");
+			wp_enqueue_style('cfbe-style', WP_PLUGIN_URL . "/custom-field-bulk-editor/cfbe-style.css");
 		}
 	}
 }
@@ -94,18 +94,41 @@ function cfbe_editor() {
 
 	$args = array(
 		"post_type" => $post_type,
-		"posts_per_page" => -1,
+		"posts_per_page" => isset($_GET['posts_per_page']) ? (int)$_GET['posts_per_page'] : 200,
 		"post_status" => array("publish", "pending", "draft", "future", "private"),
 		"order" => "ASC",
 		"orderby" => "id",
-		"page" => isset($_GET['page']) ? (int)$_GET['page'] : 1,
+		"page" => isset($_GET['page_number']) ? (int)$_GET['page_number'] : 1,
 	);
 
+	//Search
+	$searchtext = "";
 	if (isset($_GET['searchtext'])) {
 		$searchtext = esc_attr($_GET["searchtext"]);
-		$args["s"] = $_GET["searchtext"];
-	} else {
-		$searchtext = "";
+
+		//Date
+		if (strpos($searchtext, "..") !== false) {
+			$date_array = explode("..", $searchtext);
+			$start_date = trim($date_array[0]);
+			$end_date = trim($date_array[1]);
+			if (!$start_date || $start_date == "x") {
+				$start_date = "1970-01-01";
+			}
+			if (!$end_date || $end_date == "x") {
+				$end_date = "now";
+			}
+			$args["date_query"] = array(
+				array(
+					'after'     => $start_date,
+					'before'    => $end_date,
+					'inclusive' => true,
+				),
+			);
+
+		//Regular Search
+		} else {
+			$args["s"] = $_GET["searchtext"];
+		}
 	}
 
 	$taxonomies = get_object_taxonomies($post_type);
@@ -139,12 +162,25 @@ function cfbe_editor() {
 	echo '<form action="options.php" name="cfbe_form_2" id="cfbe_form_2" method="post">';
 	echo '<input type="hidden" name="cfbe_save" value="1" />'."\n";
 	echo '<input type="hidden" name="cfbe_current_max" id="cfbe_current_max" value="3" />'."\n";
-	echo '<input type="hidden" name="cfbe_post_type" value="' . htmlspecialchars($post_type) . '" />'."\n";
-	echo '<input type="hidden" name="edit_mode" value="' . htmlspecialchars($edit_mode) . '" />'."\n";
-	echo '<input type="hidden" name="multi_value_mode" value="' . htmlspecialchars($multi_value_mode) . '" />'."\n";
+	echo '<input type="hidden" name="cfbe_post_type" value="' . esc_attr($post_type) . '" />'."\n";
+	echo '<input type="hidden" name="edit_mode" value="' . esc_attr($edit_mode) . '" />'."\n";
+	echo '<input type="hidden" name="multi_value_mode" value="' . esc_attr($multi_value_mode) . '" />'."\n";
+	if (isset($_REQUEST['search'])) {
+		echo '<input type="hidden" name="search" value="' . esc_attr($_REQUEST['search']) . '" />'."\n";
+	}
+	if (isset($_REQUEST['search'])) {
+		echo '<input type="hidden" name="search" value="' . esc_attr($_REQUEST['search']) . '" />'."\n";
+	}
+	if (isset($_REQUEST['page_number'])) {
+		echo '<input type="hidden" name="page_number" value="' . esc_attr($_REQUEST['page_number']) . '" />'."\n";
+	}
+	if (isset($_REQUEST['posts_per_page'])) {
+		echo '<input type="hidden" name="posts_per_page" value="' . esc_attr($_REQUEST['posts_per_page']) . '" />'."\n";
+	}
 	wp_nonce_field('cfbe-save');
 
-	$all_posts = get_posts($args);
+	$all_posts = new WP_Query($args);
+	//echo "<pre>" . print_r($all_posts, 1) . "</pre>";
 	?>
 	<table cellspacing="0" class="wp-list-table widefat fixed posts cfbe-table">
 	<thead>
@@ -176,7 +212,9 @@ function cfbe_editor() {
 	<?php
 	$i = 1;
 	$tabindex = 10000;
-	foreach ($all_posts AS $post) {
+	while ($all_posts->have_posts()) {
+		$all_posts->the_post();
+		$post = $all_posts->post;
 		echo '<tr valign="top" class="' . ($i % 2 ? 'alternate ' : '') . 'format-default" id="post-' . $post->ID . '" rel="' . $i . '">';
 		if ($edit_mode == "single") echo '<th class="check-column" scope="row" style="padding: 9px 0;"><input type="checkbox" value="' . $post->ID . '" name="post[]"></th>';
 		echo '<td class="id column-id">' . $post->ID . '</td>';
@@ -411,9 +449,14 @@ function cfbe_save() {
 	}
 
 	$post_link = $post_type != "post" ? "post_type=$post_type&" : "";
-	$cfbe_add_new_values = isset($_POST['cfbe_add_new_values']) ? '&cfbe_add_new_values=1' : '';
-	header("Location: edit.php?" . $post_link . "page=cfbe_editor-$post_type&edit_mode=$edit_mode&saved=1&multi_value_mode=" . $multi_value_mode . $cfbe_add_new_values);
-	die;
+	$url = "edit.php?" . $post_link . "page=cfbe_editor-$post_type&edit_mode={$edit_mode}&saved=1";
+	$url .= "&multi_value_mode=" . $multi_value_mode;
+	$url .= isset($_POST['cfbe_add_new_values']) ? '&cfbe_add_new_values=1' : '';
+	$url .= isset($_POST['search']) ? '&search=' . $_POST['search'] : '';
+	$url .= isset($_POST['posts_per_page']) ? '&posts_per_page=' . $_POST['posts_per_page'] : '';
+	$url .= isset($_POST['page_number']) ? '&page_number=' . $_POST['page_number'] : '';
+	wp_redirect(admin_url($url));
+	exit;
 }
 
 
@@ -488,8 +531,8 @@ function cfbe_save_settings() {
 	}
 	update_option("cfbe_post_types", $cfbe_post_types);
 
-	header("Location: options-general.php?page=cfbe_settings&saved=1");
-	die;
+	wp_redirect(admin_url("options-general.php?page=cfbe_settings&saved=1"));
+	exit;
 }
 
 
@@ -553,5 +596,3 @@ function cfbe_create_settings() {
 	}
 	update_option("cfbe_post_types", $cfbe_post_types);
 }
-
-?>

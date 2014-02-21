@@ -3,8 +3,8 @@ Contributors: sparkweb
 Donate link: http://www.soapboxdave.com/
 Tags: custom fields, bulk, editor, custom post type
 Requires at least: 3.0
-Tested up to: 3.8
-Stable tag: 1.7.1
+Tested up to: 3.8.1
+Stable tag: 1.8
 This plugin lets you edit the custom fields for many posts at once. Designed to work with pages, posts, and all custom post types.
 
 == Description ==
@@ -14,6 +14,10 @@ This plugin lets you edit the custom fields for many posts at once. Designed to 
 
 
 == Frequently Asked Questions ==
+
+= I have a lot of posts, how can I edit them all? =
+
+This plugin will run into memory problems and not submit properly if there are too many posts on a page. Currently the page limit is set at 200. To show more or less on a page, just add "posts_per_page=10" to the querystring to display only 10 posts. Use the querystring page_number=X to display a certain page.
 
 = How can I remove (delete) custom fields from a record? =
 
@@ -26,6 +30,10 @@ Yup, just go to the settings page and you can turn post types on and off.
 = Can I enter multiple values per custom field name? =
 
 Yes. Just check the "Add New Custom Fields Instead of Updating" checkbox when saving.
+
+= Can I search by date? =
+
+Yes. Search for a date range by entering a search query with ".." between the dates. So if you wanted to search for all dates between 2014-01-01 and 2014-02-01 you would search for "2014-01-01..2014-02-01". Or search for "2014-01-01.." to search for all orders between 2014-01-01 and the current date. Or search from the beginning of time until 2010-01-01 by searching "..2010-01-01".
 
 = How do the plugin hooks/customizations work? =
 
@@ -59,6 +67,10 @@ By default the plugin will be enabled for all post types but you can go to the s
 
 
 == Changelog ==
+
+= 1.8 (2/21/2014) =
+* Adding ability to search posts by date
+* Limiting default posts per page to 200
 
 = 1.7.1 (1/5/2014) =
 * Fix for incompatibility with the (fabulous) Advanced Custom Fields plugin
@@ -103,4 +115,4 @@ By default the plugin will be enabled for all post types but you can go to the s
 
 == Upgrade Notice ==
 
-Fix for Advanced Custom Fields compatibility
+Adding ability to search posts by date, limiting default posts per page to 200
