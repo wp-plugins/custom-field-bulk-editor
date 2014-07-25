@@ -222,7 +222,7 @@ function cfbe_editor() {
 		if ($edit_mode == "multi") {
 			echo '<input type="hidden" value="' . $post->ID . '" name="post[]">' . "\n";
 			if ($multi_value_mode != "bulk") {
-				echo '<td class="post-fieldname column-fieldname"><input type="text" name="cfbe_multi_fieldname_' . $post->ID . '" id="cfbe_multi_fieldname_' . $post->ID . '" value="" class="cfbe_multi_fieldname" tabindex="' . ($tabindex) .'" /> <a href="#" class="fill_down button" rel="' . $post->ID . '">Fill</a></td>';
+				echo '<td class="post-fieldname column-fieldname"><input type="text" name="cfbe_multi_fieldname_' . $post->ID . '" id="cfbe_multi_fieldname_' . $post->ID . '" value="" class="cfbe_multi_fieldname" data-postid="' . $post->ID . '" tabindex="' . ($tabindex) .'" /> <a href="#" class="fill_down button" rel="' . $post->ID . '">Fill</a></td>';
 				echo '<td class="post-fieldvalue column-fieldnvalue"><textarea name="cfbe_multi_fieldvalue_' . $post->ID . '" id="cfbe_multi_fieldvalue_' . $post->ID . '" class="cfbe_multi_fieldvalue" tabindex="' . ($tabindex + 1) .'"></textarea></td>';
 			}
 		}
@@ -348,13 +348,25 @@ function cfbe_editor() {
 			return false;
 		});
 
+		$(".cfbe_multi_fieldname").blur(function() {
+			var postid = $(this).data("postid");
+			var data = {
+				'action': 'cfbe_lookup_meta_value',
+				'post_id': postid,
+				'field_name': $(this).val()
+			};
+			$.post(ajaxurl, data, function(response) {
+				$("#cfbe_multi_fieldvalue_" + postid).val(response);
+			});
+		});
+
 		$(".fill_down").click(function() {
 			var fieldname = $("#cfbe_multi_fieldname_" + $(this).attr("rel")).val();
 			var parent_rel = $(this).parents("tr").attr("rel");
 			$(".cfbe-table > tbody > tr").each(function() {
 				this_rel = $(this).attr("rel");
 				if (parseInt(this_rel) > parseInt(parent_rel)) {
-					$(this).find(".cfbe_multi_fieldname").val(fieldname);
+					$(this).find(".cfbe_multi_fieldname").val(fieldname).trigger("blur");
 				}
 			});
 			return false;
@@ -595,4 +607,10 @@ function cfbe_create_settings() {
 		$cfbe_post_types[] = $post_type;
 	}
 	update_option("cfbe_post_types", $cfbe_post_types);
+}
+
+add_action( 'wp_ajax_cfbe_lookup_meta_value', 'cfbe_lookup_meta_value_callback' );
+function cfbe_lookup_meta_value_callback() {
+	echo get_post_meta($_POST['post_id'], $_POST['field_name'], 1);
+	die();
 }

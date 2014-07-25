@@ -3,8 +3,8 @@ Contributors: sparkweb
 Donate link: http://www.soapboxdave.com/
 Tags: custom fields, bulk, editor, custom post type
 Requires at least: 3.0
-Tested up to: 3.9
-Stable tag: 1.8
+Tested up to: 4.0
+Stable tag: 1.9
 This plugin lets you edit the custom fields for many posts at once. Designed to work with pages, posts, and all custom post types.
 
 == Description ==
@@ -67,6 +67,9 @@ By default the plugin will be enabled for all post types but you can go to the s
 
 
 == Changelog ==
+
+= 1.9 (7/25/2014) =
+* Adding ajax fetch for multi-value entry. Gets current value.
 
 = 1.8 (2/21/2014) =
 * Adding ability to search posts by date
