@@ -5,7 +5,7 @@ Plugin Name: Custom Field Bulk Editor
 Plugin URI: http://wordpress.org/extend/plugins/custom-field-bulk-editor/
 Description: Allows you to edit your custom fields in bulk. Works with custom post types.
 Author: SparkWeb Interactive, Inc.
-Version: 1.9
+Version: 1.9.1
 Author URI: http://www.sparkweb.net/
 
 **************************************************************************
@@ -48,7 +48,7 @@ function cfbe_init() {
 
 	//Create Menus
 	$post_types = get_post_types();
-	$skip_array = array("revision", "attachment", "nav_menu_item", "acf");
+	$skip_array = array("revision", "attachment", "nav_menu_item", "acf", "acf-field-group", "acf-field");
 	foreach ($post_types as $post_type ) {
 		if (in_array($post_type, $skip_array)) continue;
 		if (in_array($post_type, $cfbe_post_types)) add_submenu_page("edit.php".($post_type != "post" ? "?post_type=".$post_type : ""), __('Bulk Edit Fields'), __('Bulk Edit Fields'), apply_filters('cfbe_menu_display_' . $post_type, 'manage_options'), 'cfbe_editor-'.$post_type, 'cfbe_editor');
@@ -98,7 +98,7 @@ function cfbe_editor() {
 		"post_status" => array("publish", "pending", "draft", "future", "private"),
 		"order" => "ASC",
 		"orderby" => "id",
-		"page" => isset($_GET['page_number']) ? (int)$_GET['page_number'] : 1,
+		"paged" => isset($_GET['page_number']) ? (int)$_GET['page_number'] : 1,
 	);
 
 	//Search
@@ -412,7 +412,7 @@ function cfbe_save() {
 	//Loop Through Each Saved Post
 	$current_record_count = 0;
 	foreach ($posts AS $post) {
-		$post_id = $post;
+		$post_id = (int)$post;
 
 		//Multi Value
 		if ($edit_mode == "multi") {
@@ -452,8 +452,8 @@ function cfbe_save() {
 		//Change Field Name
 		if (isset($_POST['cfbe_fieldname_1']) && isset($_POST['cfbe_fieldname_2'])) {
 			if ($_POST['cfbe_fieldname_1'] && $_POST['cfbe_fieldname_2']) {
-				$sql = "UPDATE $wpdb->postmeta SET meta_key = '" . mysql_real_escape_string($_POST['cfbe_fieldname_2']) . "' WHERE post_id = $post_id AND meta_key = '" . mysql_real_escape_string($_POST['cfbe_fieldname_1']) . "'";
-				$wpdb->query("UPDATE $wpdb->postmeta SET meta_key = '" . mysql_real_escape_string($_POST['cfbe_fieldname_2']) . "' WHERE post_id = $post_id AND meta_key = '" . mysql_real_escape_string($_POST['cfbe_fieldname_1']) . "'");
+				$sql = "UPDATE $wpdb->postmeta SET meta_key = '" . esc_sql($_POST['cfbe_fieldname_2']) . "' WHERE post_id = {$post_id} AND meta_key = '" . esc_sql($_POST['cfbe_fieldname_1']) . "'";
+				$wpdb->query($sql);
 			}
 		}
 
